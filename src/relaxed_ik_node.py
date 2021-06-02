@@ -8,13 +8,17 @@ last update: 7/1/18
 PLEASE DO NOT CHANGE CODE IN THIS FILE.  IF TRYING TO SET UP RELAXEDIK, PLEASE REFER TO start_here.py INSTEAD
 AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 '''
+
+
 ######################################################################################################
 
 import rospy
+import os
 from RelaxedIK.relaxedIK import RelaxedIK
 from relaxed_ik.msg import EEPoseGoals, JointAngles
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from RelaxedIK.Utils.colors import bcolors
+from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 
 eepg = None
 def eePoseGoals_cb(data):
@@ -27,26 +31,22 @@ if __name__ == '__main__':
     rospy.Subscriber('/relaxed_ik/ee_pose_goals', EEPoseGoals, eePoseGoals_cb)
     rospy.sleep(0.3)
 
-    config_file_name = rospy.get_param('config_file_name', default='relaxedIK.config')
-    relaxedIK = RelaxedIK.init_from_config(config_file_name)
+    path_to_src = os.path.dirname(__file__)
+
+    relaxedIK = get_relaxedIK_from_info_file(path_to_src)
     num_chains = relaxedIK.vars.robot.numChains
 
     while eepg == None: continue
 
-    rate = rospy.Rate(100)
+    rate = rospy.Rate(150)
     while not rospy.is_shutdown():
-        pose_goals = eepg.ee_poses
-        header = eepg.header
-        num_poses = len(pose_goals)
-        if not num_poses == num_chains:
-            print bcolors.FAIL + 'ERROR: Number of pose goals ({}) ' \
-                                 'not equal to the number of kinematic chains ({}).  Exiting relaxed_ik_node'.format(num_poses, num_chains)
-            rospy.signal_shutdown()
-
         pos_goals = []
         quat_goals = []
+        pose_goals = eepg.ee_poses
+        header = eepg.header
 
-        for p in pose_goals:
+        for i in xrange(num_chains):
+            p = pose_goals[i]
             pos_x = p.position.x
             pos_y = p.position.y
             pos_z = p.position.z
@@ -63,13 +63,9 @@ if __name__ == '__main__':
         ja = JointAngles()
         ja.header = header
         for x in xopt:
-            ja.angles.append(Float32(x))
+            ja.angles.data.append(x)
 
         angles_pub.publish(ja)
+        print xopt
 
         rate.sleep()
-
-
-
-
-

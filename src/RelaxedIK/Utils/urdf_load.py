@@ -29,7 +29,6 @@ commands to install these:
 
 '''
 
-
 def urdf_load(urdfString, startJoint, endJoint, full_joint_list, fixed_ee_joint = None, Debug=False):
     '''
     Takes in a urdf file and parses that into different object representations of the robot arm
@@ -108,6 +107,7 @@ def convertToArmJointList(urdf_robot, full_joint_list, fixedJoint, Debug=False):
             if j.name == fixedJoint:
                 currJoint = j
                 displacements.append(tuple(currJoint.origin.xyz))
+                rotOffsets.append(tuple(currJoint.origin.rpy))
         if currJoint == []:
             print bcolors.FAIL + 'fixed_ee_joint: {} not found!'.format(fixedJoint) + bcolors.ENDC
             raise Exception('Invalid fixed_ee_joint.  Exiting.')

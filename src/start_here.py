@@ -5,6 +5,8 @@ website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
 last update: 8/16/18
 
+DEVELOPMENT BRANCH
+
 Intro: Welcome to RelaxedIK! RelaxedIK is an inverse kinematics (IK) solver designed for robot platforms such that the conversion
 between Cartesian end-effector pose goals (such as "move the robot's right arm end-effector to position X, while maintaining an end-effector
 orientation Y") to Joint-Space (i.e., the robot's rotation values for each joint degree-of-freedom at a particular time-point) is
@@ -22,11 +24,6 @@ or negative experiences in using it.
 
 
 # Step-by-step guide starts here!
-
-######################################################################################################
-# NOTE: IF YOU ALREADY HAVE A PRE-MADE RelaxedIK CONFIG FILE, MAKE SURE THIS IS IN THE RelaxedIK/Config
-#   DIRECTORY, AND FEEL FREE TO SKIP TO STEP 7a.
-######################################################################################################
 
 
 ######################################################################################################
@@ -61,6 +58,13 @@ urdf_file_name = 'ur5.urdf'
 fixed_frame = 'base_link'
 ######################################################################################################
 
+######################################################################################################
+# Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
+#   will contain information about your robot setup.  Please provide a name for that file.
+#   ex: info_file_name = 'ur5_info.yaml'
+info_file_name = ''
+######################################################################################################
+
 
 ######################################################################################################
 # Step 2b: To test that your urdf is being read correctly, run the following command:
@@ -85,7 +89,11 @@ fixed_frame = 'base_link'
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
+<<<<<<< HEAD
 joint_names = [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
+=======
+joint_names = [ [ ] ]
+>>>>>>> 78274b11be27700c31a7d12bf948fcf872535442
 ######################################################################################################
 
 
@@ -105,7 +113,11 @@ joint_names = [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wr
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
+<<<<<<< HEAD
 joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
+=======
+joint_ordering =  [ ]
+>>>>>>> 78274b11be27700c31a7d12bf948fcf872535442
 ######################################################################################################
 
 
@@ -120,18 +132,23 @@ joint_ordering =  ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', '
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
+<<<<<<< HEAD
 ee_fixed_joints = [ 'ee_fixed_joint' ]
+=======
+ee_fixed_joints = [  ]
+>>>>>>> 78274b11be27700c31a7d12bf948fcf872535442
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 3d: Please provide a starting configuration for the robot.  If you leave this blank, the starting
-#   configuration will be considered zeros for all joints
+# Step 3d: Please provide a starting configuration for the robot.
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
 starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
 ######################################################################################################
+
+
 
 
 ######################################################################################################
@@ -192,11 +209,17 @@ def joint_state_define(x):
 #          return js
 #
 #
-
 # TODO: fill out this function, or leave it how it is for the default option
+<<<<<<< HEAD
 #from sensor_msgs.msg import JointState
 #def joint_state_define(x):
 #    return None
+=======
+from sensor_msgs.msg import JointState
+def joint_state_define(x):
+	return None
+
+>>>>>>> 78274b11be27700c31a7d12bf948fcf872535442
 
 ######################################################################################################
 
@@ -210,8 +233,8 @@ def joint_state_define(x):
 #   will automatically envelope the robot's links based on its geometry defined in the urdf, but you
 #   must supply a few other pieces of information for collision avoidance to work well.
 #
-#   To start, duplicate the collision_example.yaml file found in the RelaxedIK/Config directory, and rename the duplicate.
-#   The renamed file should retain its yaml file extension and should also be in the RelaxedIK/Config
+#   To start, duplicate the collision_example.yaml file found in the RelaxedIK/Config/collision_files directory, and rename the duplicate.
+#   The renamed file should retain its yaml file extension and should also be in the RelaxedIK/Config/collision_files
 #   directory.
 #
 #   Now, we'll work in this new file and make some adjustments to tailor the collision information to your robot platform.
@@ -221,9 +244,8 @@ def joint_state_define(x):
 #   Next, the robot needs a set of collision-free "sample states" so that it can learn what is close to a collision state and what is not.
 #   These sample states help the robot decide the difference between a configuration that is close to collision state and
 #   a configuration where two links are natively and safely close together.  THIS STEP IS VERY IMPORTANT FOR THE NEURAL
-#   NETWORK TO LEARN A GOOD COLLISION FUNCTION.  A set of 5 - 10 configurations where the robot is not in collision has been
-#   seen to work well, but more will always be better.  Good candidates for "sample states" are robot configurations that are
-#   somewhat close to collisions states, but do not exhibit a collision.  If it seems like the robot is being too cautious after 
+#   NETWORK TO LEARN A GOOD COLLISION FUNCTION.  Good candidates for "sample states" are robot configurations that are
+#   somewhat close to collisions states, but do not exhibit a collision.  If it seems like the robot is being too cautious after
 #   training the neural network (i.e., it is staying too far away from collision states), include more sample states that are closer to
 #   collision states without colliding.
 #
@@ -234,6 +256,25 @@ def joint_state_define(x):
 #
 #   To start this tool, use the command:
 #       roslaunch relaxed_ik urdf_viewer.launch
+#
+#   The next (optional) fields in the collision file are the following:
+#      training_states: [ ]
+#      problem_states: [ ]
+#
+#   The training_states list should be filled with any states that you think will be useful in the neural network training process
+#   NOTE: in constrast to the sample_states list filled above, the training_states states do NOT have to be in a collision free state!
+#   Good states to include in the training_states list are those that are near the interface between collision regions, such that the robot
+#   can learn through example the difference between near-collision and collision states
+#
+#   The problem_states list is similar to the training_states list (i.e., can feature either collision or non-collision states), but the
+#   system will try to give these states extra attention in the learning process.  Good states to include in the problem_states list are those
+#   that appear to have been learned incorrectly on previous runs of the neural network learning, and you want to try to fix it on another run
+#   of the learning process.
+#
+#   Both the training_states and problem_states lists are optional parameters.  If you do not want to include states in these lists, leave them as they are in the
+#	example file.
+#
+#   Again, feel free to use the urdf_viewer tool provided in the relaxed_ik package to select training_states and problem_states
 #
 #   The next fields in the yaml file (boxes, spheres, ellipsoids, capsules, cylinders) are used to specify additional
 #   objects around the environment that the robot should avoid.
@@ -260,73 +301,129 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = ''
+collision_file_name = ' '
 ###########################################################################################################
 
 
 
 ######################################################################################################
-# Step 5b: To see that your collision file was put together accurately, use the following command:
-#   roslaunch relaxed_ik collision_viewer.launch
+# Step 5b: Generate a robot info file using the following command:
+#
+#   roslaunch relaxed_ik generate_info_file.launch
+######################################################################################################
+
+
+
+
+######################################################################################################
+# Step 5c: There should now be a robot info file corresponding to the robot you are currently setting up
+#   in the RelaxedIK/Config/info_files directory.  From now on, the solver will get all information directly
+#   from this file upon initialization
+######################################################################################################
+
+
+
+
+######################################################################################################
+# Step 6: load the newly created info file by changing the info_file_name argument in the load_info_file
+#   launch file and running the following command:
+#
+#      roslaunch relaxed_ik load_info_file.launch
+#######################################################################################################
+
+
+
+
+######################################################################################################
+# Step 7: To see that your collision file was put together accurately, use the following command:
+#   rosrun relaxed_ik urdf_viewer_with_collision_info.py
 #
 #   You will see an rviz scene with collision objects in their specified locations, including the
 #   collision capsules on the robot's links.
-#   The robot in this scene will be cycling through the sample states you provided in the yaml file
+#   Text will appear above the robot that will either say "No Collision" (in green) or "Collision" (in red)
+#   Using the provided GUI pop-up, use the sliders to change the robot's configuration.  Verfiy that
+#   the "No Collision" and "Collision" match up with your interpretation of what a collision
+#   and non-collision state means for your robot platform.  If it does NOT align with what you have
+#   in mind for collision and non-collision states, go back to step 5a and adjust your collision file.
+#   This will usually consist of changing the states in the sample_states list.
 ######################################################################################################
 
 
+
+
 ######################################################################################################
-# Step 5c: If this is your first time setting up the RelaxedIK solver for a particular robot platform,
+# Step 8a: If this is your first time setting up the RelaxedIK solver for a particular robot platform,
 #   the solver will need to go through a one-time pre-processing step.  In this process, our method
 #   trains a neural network so that the robot can learn about its own geometry so that it avoids
 #   collisions with itself and other items defined in your collision yaml file, as well as learns
 #   to avoid kinematic singularities.
-#   To start this process, run the following command:
-#   roslaunch relaxed_ik preprocessing.launch
 #
-#   The system will immediately start producing input-output pairs for the neural network
-#   This process will take about 10 - 25 minutes, depending on the robot and number of degrees of freedom
-#   WARNING: THIS PROCESS WILL WRITE TO A FILE NAMED relaxedIK.config IN THE RelaxedIK/Config DIRECTORY
-#       IF YOU DO NOT WANT THIS FILE OVERWRITTEN, PLEASE RENAME THAT FILE BEFORE RUNNING THIS PROCEDURE
-######################################################################################################
-
-
-######################################################################################################
-# Step 5d: Once the preprocessing in Step 5b is done, there will now be a config file named
-#   relaxedIK.config in the RelaxedIK/Config directory.  Please rename this to something you will
-#   recognize and be able to use going forward.  When renaming, you should leave the file in the
-#   RelaxedIK/Config directory.
-#   Please provide the name of the file that you renamed your config file to
-#   ex: config_file_name = 'ur5.config'
-config_file_name = ''
-######################################################################################################
-
-
-######################################################################################################
-# Step 6: Your RelaxedIK solver is ready to go!  To see sample output, run the following command:
-#   roslaunch relaxed_ik sample.launch
+#   IMPORTANT: Make sure you are happy with the results in Step 5b before training the neural network!
 #
-#   You should see your robot in rviz moving its end effector back and forth
+#   To start this process, first run the following command:
+#
+#       rosrun relaxed_ik generate_input_and_output_pairs.py
+#
+#   As the name implies, this script will generate hundreds of thousands of input and output pairs to be
+#   used for the learning process.  After this script finishes (usually takes between 10 - 20 minutes),
+#   run the following command to initialize the learning process: 
+#
+#       roslaunch relaxed_ik preprocessing_rust.launch
+#
+#   The system will immediately start training the nueral network.
+#   This process will take about 5 - 20 minutes, depending on the robot and number of degrees of freedom
 ######################################################################################################
 
 
+
 ######################################################################################################
-# Step 7a: Now that you have a relaxedIK config file in the RelaxedIK/Config directory, you can use the relaxedIK
-#   solver as a standalone ROS node.  To start up the node, first go to the relaxed_ik.launch file (found in
-#   the launch directory) and set the 'config_file_name' argument to your desired configuration file
-#   example: <arg name="config_file_name" value="ur5.config" />
+# Step 8b (optional): If you would also like the option of running the python or julia variants of RelaxedIK,
+#   you will have to run separate preprocessing steps to learn neural networks in those environments.
+#   The python and julia versions of the solver run considerably slower than the default Rust version; however,
+#   we still want to support these versions going forward in case people would still like to use them.
 #
-#   Next, start the node with the following command:
-#   roslaunch relaxed_ik relaxed_ik.launch
+#   To train the python version, run the following command:
 #
-#   Using this command, your relaxed_ik solver will initialize in its own node and will await
-#   end effector pose goal commands.  Refer to step 7b for instructions on publishing end effector
+#       roslaunch relaxed_ik preprocessing_python.launch
+#
+#
+#   To train the julia version, run the following command:
+#
+#   roslaunch relaxed_ik preprocessing_julia.launch
+######################################################################################################
+
+
+
+######################################################################################################
+# Step 9a: Now that the solver has gone through its preprocessing, you can now use the relaxedIK
+#   solver as a standalone ROS node.  To start the solver, first load a desired info file using the 
+#   command found in Step 7.
+#
+#   For the rust version of the solver (recommended), run the following command:
+#       roslaunch relaxed_ik relaxed_ik_rust.launch
+#
+#   Note: The first time this command is run, it will take a few minutes to compile.  It will only take
+#   this long the first time it's ever built though, after that it'll start immediately with this command.  
+#
+#   (optional)
+#   If you would like to start up the python or julia versions of the solver, please use one of the following
+#   commands:
+#
+#   For the Python version of the solver, run:
+#       roslaunch relaxed_ik relaxed_ik_python.launch
+#
+#   For the Julia version of the solver, run:
+#       roslaunch relaxed_ik relaxed_ik_julia.launch
+#   (NOTE: The julia version takes a little while to do its JIT compilation, ~20-40 seconds in testing)
+#
+#   Using one of these commands, your relaxed_ik solver will initialize in its own node and will await
+#   end-effector pose goal commands.  Refer to step 9b for instructions on publishing end-effector
 #   pose goals and receiving solutions.
 ######################################################################################################
 
 
 ######################################################################################################
-# Step 7b: To receive solutions from the relaxed_ik node launched in Step 7a, you first have to publish
+# Step 9b: To receive solutions from the relaxed_ik node launched in Step 9a, you first have to publish
 #   end effector pose goals for each of the end effectors in the kinematic chain.  The relaxed_ik package
 #   provides a custom message called EEPoseGoals which encapsulates all necessary pose goal information.
 #
@@ -354,22 +451,132 @@ config_file_name = ''
 #       std_msgs/Header header
 #       std_msgs/Float32[] angles
 #
-#   The header is a standard header that corresponds to the exact header from the input EEPoseGoals message 
-#   (the header sequence number can be used to get a correspondence between input pose goals and output joint solutions 
+#   The header is a standard header that corresponds to the exact header from the input EEPoseGoals message
+#   (the header sequence number can be used to get a correspondence between input pose goals and output joint solutions
 #   in a stream of solutions)
 #   The angles field contains the joint angle solutions as Float32 values, adhering to the naming order
 #   provided in step 3b when the configuration file was created.
 #######################################################################################################
 
 
+######################################################################################################
+# Step 10: To verify that your solver has been set up properly, we provide a control simulation environment
+#   using keyboard inputs.  To start, ensure that a version of relaxedIK has been initialized, following
+#   Steps 7 and 9a.  Next, start up the rviz viewer by running the following command:
+#
+#   roslaunch relaxed_ik rviz_viewer.launch
+#
+#   Once this command is run, you should see an rviz window come up, and your robot platform should be
+#   stationary in the initial configuation you specified for the info file in step 3d.
+#   NOTE: if you ever want to CHANGE this initial configuration, change it in the robot's info file, NOT in this
+#   start_here.py file!!
+#
+#   Next, we provide a simple keyboard interface in order to pass end-effector pose goals to the solver.
+#   This keyboard interface has been designed just for testing.  To start up the keyboard controller, use
+#   the following command:
+#
+#   rosrun relaxed_ik keyboard_ikgoal_driver.py
+#
+#   The keyboard controller handles up to two chains in the robot platform (if you only have a single chain in your
+#   system, the solver will know not to listen to the single end-effector goal).  To use the keyboard controller,
+#   first ensure that the termainal window where the keyboard_ikgoal_driver script was run from has focus (i.e.,
+#   make sure it's clicked), then use the following keystrokes:
+#
+#   c - kill the controller controller script
+#   w - move chain 1 along +X
+#   x - move chain 1 along -X
+#   a - move chain 1 along +Y
+#   d - move chain 1 along -Y
+#   q - move chain 1 along +Z
+#   z - move chain 1 along -Z
+#   1 - rotate chain 1 around +X
+#   2 - rotate chain 1 around -X
+#   3 - rotate chain 1 around +Y
+#   4 - rotate chain 1 around -Y
+#   5 - rotate chain 1 around +Z
+#   6 rotate chain 1 around -Z
+#
+#   i - move chain 2 along +X
+#   m - move chain 2 along -X
+#   j - move chain 2 along +Y
+#   l - move chain 2 along -Y
+#   u - move chain 2 along +Z
+#   n - move chain 2 along -Z
+#   = - rotate chain 2 around +X
+#   - - rotate chain 2 around -X
+#   0 - rotate chain 2 around +Y
+#   9 - rotate chain 2 around -Y
+#   8 - rotate chain 2 around +Z
+#   7 - rotate chain 2 around -Z
+######################################################################################################
+
+
 # Step-by-step guide ends here!
 
 
-
-
-
-
-
-
-
-
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################

@@ -10,9 +10,12 @@ from ..GROOVE_RelaxedIK.relaxedIK_constraint import Singularity_Avoidance_Constr
 from ..GROOVE_RelaxedIK.relaxedIK_objective import *
 from ..Utils.collision_graph import Collision_Graph
 from ..Utils.config_engine import Config_Engine
-import rospy
+# import rospy
 import os
 from sklearn.externals import joblib
+from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
+import rospy
+
 
 
 
@@ -29,12 +32,14 @@ class RelaxedIK_vars(Vars):
                  position_mode = 'relative',
                  objectives=(Position_MultiEE_Obj(), Orientation_MultiEE_Obj(), Min_Jt_Vel_Obj(),Min_Jt_Accel_Obj(),Min_Jt_Jerk_Obj(), Joint_Limit_Obj(), Collision_Avoidance_nn()),
                  weight_funcs=(Identity_Weight(), Identity_Weight(), Identity_Weight(),Identity_Weight(),Identity_Weight(), Identity_Weight(), Identity_Weight()),
-                 weight_priors=(50.0,40.0,0.3,0.3,0.3,1.0,2.0),
+                 weight_priors=(50.0,49.0,3.0,1.0,2.0,10.0,2.0),
                  constraints=(),
                  bounds=(),
                  collision_file='',
+                 collision_nn_file='',
                  collision_link_exclusion_list=[],
                  config_file_name='',
+                 path_to_src='',
                  pre_config=False,
                  config_override=False,
                  c_boost=False
@@ -107,16 +112,11 @@ class RelaxedIK_vars(Vars):
         else:
             self.bounds = bounds
 
-        # if not pre_config:
-        dirname = os.path.dirname(__file__)
-        if collision_file == '':
-            cf = os.path.join(dirname, '../Config/collision.yaml')
-            # cf = 'RelaxedIK/Config/collision.yaml'
-        else:
-            cf = os.path.join(dirname, '../Config/' + collision_file)
+        if not collision_file == '':
+            cf = path_to_src + '/RelaxedIK/Config/collision_files/' + collision_file
+            # cf = os.path.join(dirname, '../Config/' + collision_file)
             # cf = 'RelaxedIK/Config/' + collision_file
-        self.collision_graph = Collision_Graph(cf, self.robot, collision_link_exclusion_list)
-
+            self.collision_graph = Collision_Graph(cf, self.robot, collision_link_exclusion_list)
 
         if pre_config:
             '''
@@ -142,7 +142,6 @@ class RelaxedIK_vars(Vars):
             for i in xrange(self.robot.numDOF):
                 self.constraints += (Joint_Velocity_Constraint(i,velocity_scale),)
 
-
         if not self.numDOF == len(init_state):
             # self.init_state = self.numDOF * [0]
             # print bcolors.WARNING + 'WARNING: Length of init_state does not match number of robot DOFs.  Automatically ' \
@@ -150,7 +149,7 @@ class RelaxedIK_vars(Vars):
             #    str(self.init_state)) + bcolors.ENDC
             print(bcolors.WARNING + 'WARNING: Length of init_state does not match number of robot DOFs.  Is this what you intended?' + bcolors.ENDC)
 
-        Vars.__init__(self,name, objective_function, self.init_state,objectives,weight_funcs,weight_priors,constraints=self.constraints,bounds=self.bounds)
+        Vars.__init__(self, name, objective_function, self.init_state,objectives,weight_funcs,weight_priors,constraints=self.constraints,bounds=self.bounds)
 
         self.goal_positions = []
         for i in range(self.num_chains):
@@ -166,6 +165,7 @@ class RelaxedIK_vars(Vars):
         self.prev_goal_quats = self.goal_quats
         self.frames = self.robot.getFrames(self.init_state)
         self.joint_limit_obj_value = 0.0
+        self.multithread = False
 
         self.init_ee_positions = self.robot.get_ee_positions(self.init_state)
         self.init_ee_quats = self.robot.get_ee_rotations(self.init_state)
@@ -180,11 +180,13 @@ class RelaxedIK_vars(Vars):
         self.solveID = 1.0
         self.avg_solution_time = 0.0
         self.total_run_time = 0.0
-        self.start_time = rospy.get_time()
+        # self.start_time = rospy.get_time()
         self.solverCounter = 0
 
         if not pre_config:
-            self.ce = Config_Engine(self.collision_graph, self, config_fn=config_file_name, override=config_override)
+            # y = get_relaxedIK_yaml_obj(path_to_src)
+            # collision_nn_file = y['collision_nn_file']
+            self.ce = Config_Engine(self.collision_graph, self, path_to_src,collision_nn_file,config_fn=config_file_name, override=config_override)
             self.collision_nn = self.ce.collision_nn
 
     def update(self, xopt, f_obj, publish_objectives=True,publish_constraints=True, publish_weight_funcs=True):
@@ -203,7 +205,7 @@ class RelaxedIK_vars(Vars):
         self.prev_goal_positions2 = self.prev_goal_positions
         self.prev_goal_positions =  self.goal_positions
         self.solveID += 1.0
-        self.total_run_time = rospy.get_time() - self.start_time
+        # self.total_run_time = rospy.get_time() - self.start_time
         self.avg_solution_time = self.total_run_time / self.solveID
 
 

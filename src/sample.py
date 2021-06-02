@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+
 '''
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
@@ -8,34 +9,58 @@ last update: 5/10/18
 ######################################################################################################
 
 from start_here import urdf_file_name, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
-    joint_state_define, collision_file_name, fixed_frame, config_file_name
-from RelaxedIK.relaxedIK import RelaxedIK
+    joint_state_define, collision_file_name, fixed_frame
+from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from relaxed_ik.msg import EEPoseGoals
 from geometry_msgs.msg import Pose
 from sensor_msgs.msg import JointState
+from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 import rospy
 import roslaunch
 import os
 import tf
 import math
+import os
+from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
+from RelaxedIK.Julia_Bridge.relaxedIK_julia import RelaxedIK_Julia
 
 
 if __name__ == '__main__':
     # Don't change this code####################################################################################
+
     rospy.init_node('sample_node')
 
-    ####################################################################################################################
-    relaxedIK = RelaxedIK.init_from_config(config_file_name)
-    ####################################################################################################################
+    path_to_src = os.path.dirname(__file__)
 
-    urdf_file = open(relaxedIK.vars.urdf_path, 'r')
+    rik = RelaxedIK_Julia(path_to_src)
+    rik.reset(1)
+    # rik = get_relaxedIK_from_info_file(path_to_src)
+
+    y = get_relaxedIK_yaml_obj(path_to_src)
+    if not y == None:
+        urdf_file_name = y['urdf_file_name']
+        joint_names = y['joint_names']
+        joint_ordering = y['joint_ordering']
+        ee_fixed_joints = y['ee_fixed_joints']
+        starting_config = y['starting_config']
+        collision_file_name = y['collision_file_name']
+        fixed_frame = y['fixed_frame']
+        joint_state_define_file_name = y['joint_state_define_func_file']
+        joint_state_define_file = open(path_to_src + '/RelaxedIK/Config/joint_state_define_functions/' + joint_state_define_file_name, 'r')
+        func = joint_state_define_file.read()
+        exec(func)
+        print urdf_file_name
+
+    num_chains = len(ee_fixed_joints)
+
+    urdf_file = open(path_to_src + '/RelaxedIK/urdfs/' + urdf_file_name, 'r')
     urdf_string = urdf_file.read()
     rospy.set_param('robot_description', urdf_string)
     js_pub = rospy.Publisher('joint_states',JointState,queue_size=5)
     ee_pose_goals_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals', EEPoseGoals, queue_size=3)
     tf_pub = tf.TransformBroadcaster()
 
-    rospy.sleep(0.3)
+    rospy.sleep(0.5)
 
     # Don't change this code ###########################################################################################
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
@@ -48,15 +73,17 @@ if __name__ == '__main__':
     rospy.sleep(1.0)
 
     counter = 0.0
-    stride = 0.08
+    stride = 0.01
     idx = 0
+
+    rate = rospy.Rate(80)
     while not rospy.is_shutdown():
         c = math.cos(counter)
-        s = 0.2
-        num_ee = relaxedIK.vars.robot.numChains
+        s = 1.1
+        num_ee = num_chains
         goal_pos = []
         goal_quat = []
-        goal_pos.append([0,s*c,0])
+        goal_pos.append([s*c,0,0])
         for i in range(num_ee):
             goal_quat.append([1,0,0,0])
             if i == 0:
@@ -64,7 +91,12 @@ if __name__ == '__main__':
             else:
                 goal_pos.append([0,0,0])
 
-        xopt = relaxedIK.solve(goal_pos, goal_quat)
+        # xopt = relaxedIK.solve(goal_pos, goal_quat)
+        # xopt = get_solution(path_to_src)
+        # print xopt
+        # xopt = 6*[0.0]
+        xopt = rik.solve(goal_pos, goal_quat)
+        print xopt
 
         js = joint_state_define(xopt)
         if js == None:
@@ -103,3 +135,5 @@ if __name__ == '__main__':
 
         idx += 1
         counter += stride
+
+        rate.sleep()

@@ -4,6 +4,9 @@ import math as M
 import numpy as np
 import numpy.random as r
 from RelaxedIK.Utils.filter import EMA_filter
+from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj, get_relaxedIK_yaml_obj_from_info_file_name
+from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
+
 
 def rand_vec(bounds):
     vec = []
@@ -16,6 +19,32 @@ def rand_vec(bounds):
     return vec
 
 
+# path_to_src = os.path.dirname(os.path.abspath(__file__))
+def get_relaxedIK_vars_from_info_file(path_to_src, info_file_name = '', preconfig=False):
+    if info_file_name == '':
+        y = get_relaxedIK_yaml_obj(path_to_src)
+    else:
+        y = get_relaxedIK_yaml_obj_from_info_file_name(path_to_src, info_file_name)
+    urdf_file_name = y['urdf_file_name']
+    joint_names = y['joint_names']
+    joint_ordering = y['joint_ordering']
+    ee_fixed_joints = y['ee_fixed_joints']
+    starting_config = y['starting_config']
+    collision_file_name = y['collision_file_name']
+    collision_nn_file = y['collision_nn_file']
+    urdf_path = path_to_src + '/RelaxedIK/urdfs/' + urdf_file_name
+    if not preconfig:
+        vars = RelaxedIK_vars("robot", urdf_path, joint_names, ee_fixed_joints, joint_ordering,init_state=starting_config,path_to_src=path_to_src, collision_file=collision_file_name, collision_nn_file=collision_nn_file)
+    else:
+        vars = RelaxedIK_vars("robot", urdf_path, joint_names, ee_fixed_joints, joint_ordering,init_state=starting_config,path_to_src=path_to_src, collision_file=collision_file_name, pre_config=True)
+    return vars
+
+
+def get_relaxedIK_from_info_file(path_to_src, info_file_name = '', optimization_package='scipy', solver_name='slsqp', preconfig=False):
+    vars = get_relaxedIK_vars_from_info_file(path_to_src, info_file_name, preconfig=preconfig)
+    return RelaxedIK(vars, optimization_package, solver_name)
+
+
 class RelaxedIK(object):
     def __init__(self, vars, optimization_package='scipy', solver_name='slsqp'):
         self.vars = vars
@@ -23,30 +52,6 @@ class RelaxedIK(object):
         self.solver_name = solver_name
         self.groove = get_groove(vars, optimization_package,solver_name)
         self.filter = EMA_filter(self.vars.init_state,a=0.5)
-
-
-    @classmethod
-    def init_from_config(self, config_name):
-        import os
-        from sklearn.externals import joblib
-        from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
-        dirname = os.path.dirname(__file__)
-        path = os.path.join(dirname, 'Config/{}'.format(config_name))
-        file = open(path,'r')
-        self.config_data = joblib.load(file)
-
-        self.robot_name = self.config_data[0]
-        self.collision_nn = self.config_data[1]
-        self.init_state = self.config_data[2]
-        self.full_joint_lists = self.config_data[3]
-        self.fixed_ee_joints = self.config_data[4]
-        self.joint_order = self.config_data[5]
-        self.urdf_path = self.config_data[6]
-        self.collision_file = self.config_data[7]
-
-        vars = RelaxedIK_vars(self.robot_name,self.urdf_path,self.full_joint_lists,self.fixed_ee_joints,self.joint_order,
-                              config_file_name=config_name, collision_file=self.collision_file,init_state=self.init_state)
-        return RelaxedIK(vars)
 
 
     def solve(self, goal_positions, goal_quats, prev_state=None, vel_objectives_on=True, unconstrained=True, verbose_output=False, max_iter=11, maxtime=.05, rand_start=False):

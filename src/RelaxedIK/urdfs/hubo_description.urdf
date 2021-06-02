@@ -8,10 +8,13 @@
 			</geometry>
 		</visual>
 	</link>
-	<joint name="base_footprint_joint" type="fixed">
+	<joint name="WAIST2" type="revolute">
 		<origin rpy="0 0 0" xyz="0 0 0"/>
 		<parent link="base_footprint"/>
 		<child link="Body_TORSO"/>
+		<limit effort="100000" lower="-3.0" upper="3.0" velocity="2.0"/>
+		<dynamics damping="200" friction="200"/>
+		<axis xyz="0 0 1"/>
 	</joint>
 	<link name="Body_TORSO">
 		<inertial>
@@ -1783,4 +1786,3 @@
 	</joint>
 	<link name="Body_Face"/>
 </robot>
-

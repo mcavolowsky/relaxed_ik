@@ -23,7 +23,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -111,3 +111,47 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+*.pyc
+
+test*.*
+*.xml
+*.iml
+*.rviz
+
+src/RelaxedIK/Config/collision_files/*
+!src/RelaxedIK/Config/collision_files/collision_example.yaml
+!src/RelaxedIK/Config/collision_files/README
+src/RelaxedIK/Config/collision_nn/*
+!src/RelaxedIK/Config/collision_nn/README
+src/RelaxedIK/Config/collision_nn_python/*
+!src/RelaxedIK/Config/collision_nn_python/README
+src/RelaxedIK/Config/info_files/*
+!src/RelaxedIK/Config/info_files/README
+src/RelaxedIK/Config/joint_state_define_functions/*
+!src/RelaxedIK/Config/joint_state_define_functions/README
+planner_keyboard.py
+planner_tester*.jl
+src/RelaxedIK/relaxedMP.jl
+src/RelaxedIK/MP/*
+src/RelaxedIK/MP2/*
+src/RelaxedIK/MP3/*
+src/RelaxedIK/MP4/*
+src/RelaxedIK/MP5/*
+src/RelaxedIK/MP6/*
+src/RelaxedIK/MP7/*
+src/RelaxedIK/MP8/*
+src/relaxed_ik_fixed_frequency_node.jl
+point_cloud_pub.py
+src/RelaxedIK/FileIO/mist_outputs/*
+src/RelaxedIK/FileIO/solver_outputs/*
+src/RelaxedIK/FileIO/point_clouds/*
+src/RelaxedIK/FileIO/objs/*
+src/RelaxedIK/FileIO/task_recordings/*
+src/RelaxedIK/Config/collision_inputs_and_outputs/*
+!src/RelaxedIK/Config/collision_inputs_and_outputs/README
+src/RelaxedIK/Config/collision_nn_rust/*
+!src/RelaxedIK/Config/collision_nn_rust/README
+
+#rust related
+src/RelaxedIK_Rust/target

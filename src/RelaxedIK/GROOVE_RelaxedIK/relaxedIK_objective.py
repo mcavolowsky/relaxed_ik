@@ -1,6 +1,6 @@
 from ..Utils.colors import *
 
-from ..GROOVE.GROOVE_Utils.objective import Objective, get_groove_global_vars, objective_master
+from ..GROOVE.GROOVE_Utils.objective import Objective, objective_master
 from ..Utils import tf_fast as Tf
 from ..Utils.geometry_utils import *
 from ..Utils.joint_utils import *
@@ -13,11 +13,12 @@ from ..Utils.joint_utils import *
 #           'https://www.boost.org/doc/libs/1_67_0/more/getting_started/unix-variants.html'
 
 
-def objective_master_relaxedIK(x):
-    vars = get_groove_global_vars()
+def objective_master_relaxedIK(x, vars):
+    # vars = get_groove_global_vars()
     vars.frames = vars.robot.getFrames(x)
 
-    return objective_master(x)
+    return objective_master(x, vars)
+
 
 ########################################################################################################################
 
@@ -52,6 +53,7 @@ class Position_MultiEE_Obj(Objective):
         else:
             x_val_sum = 0.0
 
+
             for i, f in enumerate(vars.frames):
                 positions = f[0]
                 eePos = positions[-1]
@@ -73,6 +75,7 @@ class Position_MultiEE_Obj(Objective):
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
             return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+
 
 class Orientation_Obj(Objective):
     def __init__(self, *args): pass
@@ -405,3 +408,5 @@ class Collision_Avoidance_nn(Objective):
             return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
 
         # return math.exp(x_val - 0.64) - 1
+
+
