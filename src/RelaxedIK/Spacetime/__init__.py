@@ -1,3 +1,3 @@
 __author__ = 'gleicher'
 
-__all__ = ["robot"]
+__all__ = ["robot", "arm"]

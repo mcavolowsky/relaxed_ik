@@ -1,4 +1,4 @@
-import arm
+from . import arm
 from ..Utils.transformations import quaternion_from_matrix
 
 class Robot:
